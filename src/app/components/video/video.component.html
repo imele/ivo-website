@@ -1,0 +1,10 @@
+<div class="video-container">
+    <video #videoElement class="scroll-video" preload="auto" (loadeddata)="onVideoLoaded()">
+      <source src="/assets/video.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div class="loading" *ngIf="!isVideoLoaded">Loading...</div>
+    <div class="welcome-text" [class.visible]="showWelcomeText">
+      {{ welcomeText }}<span class="cursor" *ngIf="showWelcomeText && welcomeText.length > 0"></span>
+    </div>
+</div>
