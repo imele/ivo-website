@@ -7,4 +7,7 @@
     <div class="welcome-text" [class.visible]="showWelcomeText">
       {{ welcomeText }}<span class="cursor" *ngIf="showWelcomeText && welcomeText.length > 0"></span>
     </div>
+    <div class="initial-text" [class.visible]="showInitialText">
+      {{ INITIAL_TEXT }}
+    </div>
 </div>
