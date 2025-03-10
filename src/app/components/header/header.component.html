@@ -6,4 +6,13 @@
     <a mat-button routerLink="/projects">Projects</a>
     <a mat-button routerLink="/about">About Me</a>
   </nav>
+  <div class="framework-buttons">
+    <a mat-button *ngFor="let framework of frameworks" 
+       [href]="framework.url" 
+       target="_blank"
+       class="framework-button">
+      <mat-icon *ngIf="framework.icon" [svgIcon]="framework.icon" class="framework-icon"></mat-icon>
+      {{ framework.name }}
+    </a>
+  </div>
 </mat-toolbar>
