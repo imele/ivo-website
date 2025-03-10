@@ -18,7 +18,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   welcomeText = '';
   
   private readonly SMOOTHING_FACTOR = 0.15;
-  private readonly FULL_WELCOME_TEXT = 'Welcome to my website';
+  private readonly FULL_WELCOME_TEXT = 'Hello! I am an IT Analyst and a technology enthusiast who has been developing software for the past 8 years. Continue scrolling to know more about me.';
   private readonly TEXT_START_TIME = 3;
   
   private scrollListener: (() => void) | null = null;
@@ -82,27 +82,61 @@ export class VideoComponent implements OnInit, OnDestroy {
     const video = this.videoElement.nativeElement;
     const videoHeight = video.duration * 1000;
     const currentScroll = window.scrollY;
+    const videoContainer = this.getVideoContainer();
+    const containerHeight = videoContainer ? videoContainer.offsetHeight : 600 * window.innerHeight / 100;
     
-    this.checkIfAtBottom(currentScroll);
-    clearTimeout(this.scrollTimeout);
-
-    this.updateVideoTime(video, videoHeight, currentScroll);
-    this.updateWelcomeText(video.currentTime);
-    this.handleVideoPlayback(video, currentScroll);
+    // Check if we've scrolled past the video container
+    const scrolledPastContainer = currentScroll >= containerHeight - window.innerHeight;
+    
+    if (scrolledPastContainer) {
+      // We've scrolled past the video container, fix the video in place
+      video.classList.add('video-ended');
+      video.currentTime = video.duration - 0.1;
+      video.pause();
+      this.isPlaying = false;
+      this.isAtBottom = true;
+      
+      // Add class to welcome text as well and start fade out
+      const welcomeTextElement = document.querySelector('.welcome-text');
+      if (welcomeTextElement) {
+        welcomeTextElement.classList.add('text-ended');
+        // Ensure visible class is removed to trigger fade out
+        setTimeout(() => {
+          welcomeTextElement.classList.remove('visible');
+        }, 100);
+      }
+    } else {
+      // Still within the video container
+      video.classList.remove('video-ended');
+      this.isAtBottom = false;
+      
+      // Remove class from welcome text
+      const welcomeTextElement = document.querySelector('.welcome-text');
+      if (welcomeTextElement) {
+        welcomeTextElement.classList.remove('text-ended');
+        // Only add visible class if we should show welcome text
+        if (this.showWelcomeText) {
+          welcomeTextElement.classList.add('visible');
+        }
+      }
+      
+      this.updateVideoTime(video, containerHeight, currentScroll);
+      this.updateWelcomeText(video.currentTime);
+      this.handleVideoPlayback(video, currentScroll);
+    }
     
     this.lastScrollPosition = currentScroll;
     this.scheduleNextUpdate(video);
     this.checkVideoFinished(video);
   }
 
-  private checkIfAtBottom(currentScroll: number): void {
-    const scrollHeight = document.documentElement.scrollHeight;
-    const windowHeight = window.innerHeight;
-    this.isAtBottom = (windowHeight + currentScroll) >= scrollHeight - 50;
+  private getVideoContainer(): HTMLElement | null {
+    return document.querySelector('.video-container');
   }
 
-  private updateVideoTime(video: HTMLVideoElement, videoHeight: number, currentScroll: number): void {
-    const scrollProgress = Math.max(0, Math.min(currentScroll / videoHeight, 1));
+  private updateVideoTime(video: HTMLVideoElement, containerHeight: number, currentScroll: number): void {
+    // Calculate progress based on container height instead of video duration
+    const scrollProgress = Math.max(0, Math.min(currentScroll / (containerHeight - window.innerHeight), 1));
     this.targetTime = video.duration * scrollProgress;
     
     if (this.isAtBottom) {
@@ -115,7 +149,14 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   private handleVideoPlayback(video: HTMLVideoElement, currentScroll: number): void {
-    if (currentScroll !== this.lastScrollPosition && !this.isPlaying && !this.isAtBottom) {
+    if (this.isAtBottom) {
+      // Ensure video is paused when at the bottom
+      video.pause();
+      this.isPlaying = false;
+      return;
+    }
+    
+    if (currentScroll !== this.lastScrollPosition && !this.isPlaying) {
       this.isPlaying = true;
       video.playbackRate = 1;
       video.play().catch(() => {
@@ -141,6 +182,9 @@ export class VideoComponent implements OnInit, OnDestroy {
     if (video.currentTime >= video.duration - 0.1 || this.isAtBottom) {
       this.videoStateService.setVideoFinished(true);
       
+      // Add video-ended class to the video element
+      video.classList.add('video-ended');
+      
       if (!this.isAtBottom) {
         window.scrollTo({
           top: document.body.scrollHeight,
@@ -149,6 +193,9 @@ export class VideoComponent implements OnInit, OnDestroy {
       }
     } else {
       this.videoStateService.setVideoFinished(false);
+      
+      // Remove video-ended class when not at the end
+      video.classList.remove('video-ended');
     }
   }
 

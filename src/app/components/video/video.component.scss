@@ -27,6 +27,13 @@
   overflow: hidden;
 }
 
+.scroll-video.video-ended {
+  position: absolute;
+  bottom: 0;
+  top: auto;
+  transform: translateX(-50%);
+}
+
 .welcome-text {
   position: fixed;
   top: 50%;
@@ -47,6 +54,15 @@
 
 .welcome-text.visible {
   opacity: 1;
+}
+
+.welcome-text.text-ended {
+  position: absolute;
+  bottom: 50%;
+  top: auto;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 1s ease, position 0.3s ease, transform 0.3s ease;
 }
 
 .cursor {
@@ -80,6 +96,20 @@
 :host-context(.at-bottom) .video-container {
   height: 100vh;
   overflow: hidden;
+}
+
+:host-context(.at-bottom) .scroll-video {
+  position: absolute;
+  bottom: 0;
+  top: auto;
+  transform: translateX(-50%);
+}
+
+:host-context(.at-bottom) .welcome-text {
+  position: absolute;
+  bottom: 50%;
+  top: auto;
+  transform: translateX(-50%);
 }
 
 .loading {
